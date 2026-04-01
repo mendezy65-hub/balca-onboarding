@@ -1,0 +1,3117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Onboarding BC/FT/FPADM - Balca Industrial</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #1B3A6B;
+            --gold: #C8972A;
+            --dark: #333;
+            --light-blue: #D5E4F0;
+            --green: #27AE60;
+            --red: #E74C3C;
+            --yellow: #F39C12;
+            --white: #FFF;
+            --gray-light: #F5F5F5;
+            --gray-medium: #DDD;
+            --gray-dark: #666;
+            --border-radius: 8px;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .demo-banner {
+            background-color: #fff3cd;
+            border-bottom: 2px solid var(--yellow);
+            padding: 12px 20px;
+            text-align: center;
+            color: #856404;
+            font-weight: 500;
+            display: none;
+        }
+
+        .demo-banner.show {
+            display: block;
+        }
+
+        /* ===== LANDING PAGE ===== */
+        .landing-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--navy) 0%, #0d1e3a 100%);
+            color: var(--white);
+            text-align: center;
+        }
+
+        .landing-header {
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 3px solid var(--gold);
+        }
+
+        .landing-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .landing-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .landing-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .landing-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 50px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .landing-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 900px;
+        }
+
+        .landing-card-btn {
+            background: var(--white);
+            color: var(--navy);
+            padding: 40px 50px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            min-width: 250px;
+            text-decoration: none;
+        }
+
+        .landing-card-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            background: var(--gold);
+        }
+
+        .landing-footer {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 2px solid var(--gold);
+            font-size: 12px;
+        }
+
+        /* ===== REGISTRATION FORM ===== */
+        .registration-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .registration-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 20px;
+        }
+
+        .registration-header h2 {
+            color: var(--navy);
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .progress-step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--gray-light);
+            border: 2px solid var(--gray-medium);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: 600;
+            color: var(--gray-dark);
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active .progress-step-number {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: var(--white);
+            box-shadow: 0 0 10px rgba(200, 151, 42, 0.3);
+        }
+
+        .progress-step.completed .progress-step-number {
+            background: var(--green);
+            border-color: var(--green);
+            color: var(--white);
+        }
+
+        .progress-step-label {
+            font-size: 12px;
+            color: var(--gray-dark);
+            font-weight: 500;
+        }
+
+        .progress-step-connector {
+            position: absolute;
+            top: 20px;
+            left: calc(50% + 25px);
+            width: calc(100% - 50px);
+            height: 2px;
+            background: var(--gray-medium);
+        }
+
+        .progress-step.completed .progress-step-connector,
+        .progress-step.active .progress-step-connector {
+            background: var(--gold);
+        }
+
+        .progress-step:last-child .progress-step-connector {
+            display: none;
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .step-title {
+            color: var(--navy);
+            font-size: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-blue);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--navy);
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: var(--red);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-medium);
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 8px rgba(200, 151, 42, 0.2);
+        }
+
+        .form-group input.error,
+        .form-group select.error,
+        .form-group textarea.error {
+            border-color: var(--red);
+            background-color: #fff5f5;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Step 1: Client Type */
+        .client-type-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .client-type-card {
+            padding: 30px;
+            border: 2px solid var(--gray-medium);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .client-type-card:hover {
+            border-color: var(--gold);
+            box-shadow: var(--shadow);
+        }
+
+        .client-type-card.selected {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, rgba(200, 151, 42, 0.1), rgba(213, 228, 240, 0.3));
+            box-shadow: 0 0 12px rgba(200, 151, 42, 0.2);
+        }
+
+        .client-type-card h3 {
+            color: var(--navy);
+            margin-bottom: 10px;
+        }
+
+        .client-type-card p {
+            font-size: 13px;
+            color: var(--gray-dark);
+        }
+
+        /* Form sections */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: var(--gray-light);
+            border-left: 4px solid var(--gold);
+            border-radius: var(--border-radius);
+        }
+
+        .form-section h4 {
+            color: var(--navy);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .dynamic-add-btn {
+            background: var(--gold);
+            color: var(--white);
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .dynamic-add-btn:hover {
+            background: #b07a22;
+        }
+
+        .dynamic-item {
+            padding: 15px;
+            background: var(--white);
+            border: 1px solid var(--gray-medium);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--red);
+            color: var(--white);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Step 5: PEP Declaration */
+        .pep-alert {
+            background: #fff3cd;
+            border-left: 4px solid var(--yellow);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            color: #856404;
+            font-size: 14px;
+        }
+
+        /* Step 6: Documents */
+        .documents-checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .document-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            background: var(--gray-light);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-medium);
+        }
+
+        .document-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 15px;
+            margin-top: 3px;
+            cursor: pointer;
+        }
+
+        .document-info {
+            flex: 1;
+        }
+
+        .document-name {
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 5px;
+        }
+
+        .document-tag {
+            display: inline-block;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .document-tag.obligatorio {
+            background: #fee;
+            color: var(--red);
+        }
+
+        .document-tag.deseable {
+            background: #efe;
+            color: var(--green);
+        }
+
+        /* Step 7: Declaration */
+        .declaration-box {
+            background: var(--white);
+            border: 2px solid var(--navy);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            line-height: 1.8;
+            font-size: 13px;
+            color: var(--dark);
+        }
+
+        .declaration-box p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        .legal-basis {
+            background: var(--light-blue);
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            margin: 15px 0;
+            font-size: 12px;
+            color: var(--navy);
+            font-weight: 500;
+        }
+
+        .checkboxes-group {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-top: 3px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--white);
+        }
+
+        .signature-table td {
+            padding: 12px;
+            border: 1px solid var(--gray-medium);
+            font-size: 13px;
+        }
+
+        .signature-table td:first-child {
+            font-weight: 600;
+            background: var(--light-blue);
+            width: 35%;
+        }
+
+        /* Form Navigation */
+        .form-navigation {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: var(--white);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #b07a22;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--gray-light);
+            color: var(--dark);
+            border: 1px solid var(--gray-medium);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-medium);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Confirmation Screen */
+        .confirmation-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 40px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .confirmation-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+        }
+
+        .confirmation-container h2 {
+            color: var(--green);
+            margin-bottom: 15px;
+        }
+
+        .reference-number {
+            background: var(--light-blue);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: 2px;
+        }
+
+        /* ===== OEC PANEL ===== */
+        .oec-login {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .oec-login h2 {
+            color: var(--navy);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .oec-dashboard {
+            display: none;
+        }
+
+        .oec-dashboard.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            background: var(--navy);
+            color: var(--white);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 4px solid var(--gold);
+        }
+
+        .dashboard-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .dashboard-user {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-logout {
+            background: var(--red);
+            color: var(--white);
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: #c0392b;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: var(--border-radius);
+            color: var(--white);
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card h3 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .stat-card.blue {
+            background: var(--navy);
+        }
+
+        .stat-card.yellow {
+            background: var(--yellow);
+            color: var(--dark);
+        }
+
+        .stat-card.green {
+            background: var(--green);
+        }
+
+        .stat-card.red {
+            background: var(--red);
+        }
+
+        /* Filters */
+        .filter-section {
+            background: var(--white);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--gray-medium);
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* Solicitudes Table */
+        .solicitudes-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .solicitudes-table thead {
+            background: var(--navy);
+            color: var(--white);
+        }
+
+        .solicitudes-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .solicitudes-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--gray-light);
+            font-size: 13px;
+        }
+
+        .solicitudes-table tbody tr:hover {
+            background: var(--gray-light);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-evaluating {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .status-approved {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .btn-evaluate {
+            background: var(--gold);
+            color: var(--white);
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .btn-evaluate:hover {
+            background: #b07a22;
+        }
+
+        /* Evaluation View */
+        .evaluation-view {
+            display: none;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .evaluation-view.active {
+            display: grid;
+            grid-template-columns: 35% 65%;
+            gap: 0;
+            margin-bottom: 30px;
+        }
+
+        .evaluation-view.full {
+            display: block;
+        }
+
+        .eval-left-panel,
+        .eval-right-panel {
+            padding: 30px;
+        }
+
+        .eval-left-panel {
+            background: var(--light-blue);
+            border-right: 2px solid var(--gray-medium);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .eval-section-title {
+            color: var(--navy);
+            font-weight: 700;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            border-bottom: 2px solid var(--gray-medium);
+            padding-bottom: 8px;
+        }
+
+        .eval-section-title:first-child {
+            margin-top: 0;
+        }
+
+        .eval-data-item {
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .eval-data-label {
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .eval-data-value {
+            color: var(--dark);
+        }
+
+        /* Evaluation Form */
+        .eval-subsection {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: var(--gray-light);
+            border-radius: var(--border-radius);
+        }
+
+        .eval-subsection h5 {
+            color: var(--navy);
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .eval-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .eval-table th {
+            background: var(--navy);
+            color: var(--white);
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .eval-table td {
+            padding: 10px;
+            border: 1px solid var(--gray-medium);
+            font-size: 12px;
+        }
+
+        .eval-table select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid var(--gray-medium);
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .ebr-result {
+            background: var(--light-blue);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .ebr-result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .ebr-result-label {
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .ebr-result-value {
+            color: var(--dark);
+        }
+
+        .ebr-high {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .eval-radio-group {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .eval-radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .eval-radio-group input[type="radio"] {
+            width: auto;
+        }
+
+        /* Evaluation Buttons */
+        .evaluation-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .evaluation-actions .btn {
+            flex: 1;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid var(--gray-light);
+            border-top: 4px solid var(--gold);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            color: var(--white);
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        /* Error Messages */
+        .error-message {
+            background: #f8d7da;
+            color: #842029;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--red);
+        }
+
+        .success-message {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 12px 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--green);
+        }
+
+        /* Print Styles */
+        @media print {
+            .demo-banner,
+            .landing-header,
+            .landing-footer,
+            .form-navigation,
+            .dashboard-header,
+            .filter-section,
+            .evaluation-actions,
+            .btn-logout,
+            .btn-evaluate {
+                display: none !important;
+            }
+
+            .registration-container,
+            .confirmation-container,
+            .evaluation-view {
+                box-shadow: none;
+                max-width: 100%;
+                margin: 0;
+                page-break-inside: avoid;
+            }
+
+            .eval-left-panel {
+                background: var(--white);
+                border-right: 2px solid var(--gray-medium);
+                max-height: none;
+            }
+
+            body {
+                background: var(--white);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .landing-title {
+                font-size: 24px;
+            }
+
+            .landing-buttons {
+                flex-direction: column;
+            }
+
+            .landing-card-btn {
+                min-width: 100%;
+            }
+
+            .evaluation-view.active {
+                grid-template-columns: 1fr;
+            }
+
+            .eval-left-panel {
+                border-right: none;
+                border-bottom: 2px solid var(--gray-medium);
+            }
+
+            .progress-step:nth-child(n+4) {
+                display: none;
+            }
+
+            .progress-step-label {
+                font-size: 10px;
+            }
+
+            .progress-step-number {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .solicitudes-table {
+                font-size: 11px;
+            }
+
+            .solicitudes-table th,
+            .solicitudes-table td {
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-banner" id="demoBanner">
+        ⚠ Modo Demo — Los datos se almacenan localmente en esta sesión. Configure Supabase para modo producción.
+    </div>
+
+    <!-- LANDING PAGE -->
+    <div id="landingPage" class="landing-container">
+        <div class="landing-header">
+            <h1>BALCA INDUSTRIAL, S.A.</h1>
+            <p>Zona Libre de Colón, Panamá</p>
+        </div>
+        <div class="landing-content">
+            <h2 class="landing-title">Plataforma de Onboarding BC/FT/FPADM</h2>
+            <div class="landing-buttons">
+                <button class="landing-card-btn" onclick="goToRoute('#/registro')">
+                    Registro de Cliente
+                </button>
+                <button class="landing-card-btn" onclick="goToRoute('#/panel')">
+                    Panel del OEC
+                </button>
+            </div>
+        </div>
+        <div class="landing-footer">
+            <p>Balca Industrial, S.A. — Programa de Cumplimiento BC/FT/FPADM — Ley 23 de 2015</p>
+        </div>
+    </div>
+
+    <!-- REGISTRATION PAGE -->
+    <div id="registrationPage" style="display: none;">
+        <div class="registration-container">
+            <div class="registration-header">
+                <h2>Formulario de Registro de Cliente</h2>
+                <p>Plataforma de Onboarding BC/FT/FPADM — Balca Industrial, S.A.</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-step active" id="progressStep1">
+                    <div class="progress-step-number">1</div>
+                    <div class="progress-step-label">Tipo de Cliente</div>
+                    <div class="progress-step-connector"></div>
+                </div>
+                <div class="progress-step" id="progressStep2">
+                    <div class="progress-step-number">2</div>
+                    <div class="progress-step-label">Datos Personales</div>
+                    <div class="progress-step-connector"></div>
+                </div>
+                <div class="progress-step" id="progressStep3">
+                    <div class="progress-step-number">3</div>
+                    <div class="progress-step-label">Actividad Económica</div>
+                    <div class="progress-step-connector"></div>
+                </div>
+                <div class="progress-step" id="progressStep4">
+                    <div class="progress-step-number">4</div>
+                    <div class="progress-step-label">Relación Comercial</div>
+                    <div class="progress-step-connector"></div>
+                </div>
+                <div class="progress-step" id="progressStep5">
+                    <div class="progress-step-number">5</div>
+                    <div class="progress-step-label">Declaración PEP</div>
+                    <div class="progress-step-connector"></div>
+                </div>
+                <div class="progress-step" id="progressStep6">
+                    <div class="progress-step-number">6</div>
+                    <div class="progress-step-label">Documentos</div>
+                    <div class="progress-step-connector"></div>
+                </div>
+                <div class="progress-step" id="progressStep7">
+                    <div class="progress-step-number">7</div>
+                    <div class="progress-step-label">Declaración Jurada</div>
+                </div>
+            </div>
+
+            <form id="registrationForm">
+                <!-- STEP 1: Client Type -->
+                <div class="form-step active" id="step1">
+                    <h3 class="step-title">Paso 1: Tipo de Cliente</h3>
+                    <div class="client-type-cards">
+                        <div class="client-type-card" onclick="selectClientType('PN')">
+                            <h3>Persona Natural</h3>
+                            <p>Cliente individual</p>
+                        </div>
+                        <div class="client-type-card" onclick="selectClientType('PJ')">
+                            <h3>Persona Jurídica</h3>
+                            <p>Empresa o sociedad</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Identification Data -->
+                <div class="form-step" id="step2">
+                    <h3 class="step-title">Paso 2: Datos de Identificación</h3>
+
+                    <!-- PN Section -->
+                    <div id="pnSection" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nombre Completo <span class="required">*</span></label>
+                                <input type="text" name="pn_nombre_completo" placeholder="Ej: Juan Pérez García">
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Documento <span class="required">*</span></label>
+                                <select name="pn_tipo_documento">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="Cédula">Cédula Panameña</option>
+                                    <option value="Pasaporte">Pasaporte</option>
+                                    <option value="Cédula Residente">Cédula de Residente</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Número de Documento <span class="required">*</span></label>
+                                <input type="text" name="pn_numero_documento" placeholder="Ej: 8-123-4567">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de Nacimiento <span class="required">*</span></label>
+                                <input type="date" name="pn_fecha_nacimiento">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Sexo</label>
+                                <select name="pn_sexo">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="M">Masculino</option>
+                                    <option value="F">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado Civil</label>
+                                <select name="pn_estado_civil">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="Soltero">Soltero</option>
+                                    <option value="Casado">Casado</option>
+                                    <option value="Divorciado">Divorciado</option>
+                                    <option value="Viudo">Viudo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nacionalidad <span class="required">*</span></label>
+                                <input type="text" name="pn_nacionalidad" placeholder="Ej: Panameña">
+                            </div>
+                            <div class="form-group">
+                                <label>País de Residencia <span class="required">*</span></label>
+                                <input type="text" name="pn_pais_residencia" placeholder="Ej: Panamá">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Dirección <span class="required">*</span></label>
+                            <input type="text" name="pn_direccion" placeholder="Dirección completa">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Teléfono <span class="required">*</span></label>
+                                <input type="tel" name="pn_telefono" placeholder="Ej: +507 6123-4567">
+                            </div>
+                            <div class="form-group">
+                                <label>Email <span class="required">*</span></label>
+                                <input type="email" name="pn_email" placeholder="Ej: cliente@example.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PJ Section -->
+                    <div id="pjSection" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Razón Social <span class="required">*</span></label>
+                                <input type="text" name="pj_razon_social" placeholder="Nombre legal exacto de la empresa">
+                            </div>
+                            <div class="form-group">
+                                <label>Nombre Comercial</label>
+                                <input type="text" name="pj_nombre_comercial" placeholder="Nombre conocido (si aplica)">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>País de Constitución <span class="required">*</span></label>
+                                <input type="text" name="pj_pais_constitucion" placeholder="Ej: Panamá">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de Constitución <span class="required">*</span></label>
+                                <input type="date" name="pj_fecha_constitucion">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Número de Registro <span class="required">*</span></label>
+                                <input type="text" name="pj_numero_registro" placeholder="Número del Registro Público">
+                            </div>
+                            <div class="form-group">
+                                <label>RUC/NIT</label>
+                                <input type="text" name="pj_ruc_nit" placeholder="Número de impuestos">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Domicilio Fiscal <span class="required">*</span></label>
+                            <input type="text" name="pj_domicilio_fiscal" placeholder="Dirección del domicilio fiscal">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Teléfono <span class="required">*</span></label>
+                                <input type="tel" name="pj_telefono" placeholder="Ej: +507 260-0000">
+                            </div>
+                            <div class="form-group">
+                                <label>Email <span class="required">*</span></label>
+                                <input type="email" name="pj_email" placeholder="Email corporativo">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sitio Web</label>
+                            <input type="url" name="pj_sitio_web" placeholder="https://www.ejemplo.com">
+                        </div>
+
+                        <!-- Legal Representative -->
+                        <div class="form-section">
+                            <h4>Representante Legal</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nombre Completo <span class="required">*</span></label>
+                                    <input type="text" name="pj_rep_nombre" placeholder="Nombre del representante">
+                                </div>
+                                <div class="form-group">
+                                    <label>Documento de Identidad <span class="required">*</span></label>
+                                    <input type="text" name="pj_rep_documento" placeholder="Cédula o pasaporte">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Cargo <span class="required">*</span></label>
+                                    <input type="text" name="pj_rep_cargo" placeholder="Ej: Gerente General">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nacionalidad <span class="required">*</span></label>
+                                    <input type="text" name="pj_rep_nacionalidad" placeholder="Nacionalidad">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Board of Directors -->
+                        <div class="form-section">
+                            <h4>Junta Directiva / Dignatarios</h4>
+                            <p style="font-size:13px; color:var(--gray-dark); margin-bottom:12px;">Indique los miembros de la junta directiva o dignatarios de la empresa.</p>
+                            <div id="juntaDirectivaList"></div>
+                            <button type="button" class="dynamic-add-btn" onclick="addMiembroJunta()">+ Agregar Miembro de Junta Directiva</button>
+                        </div>
+
+                        <!-- Shareholding Structure -->
+                        <div class="form-section">
+                            <h4>Estructura / Composición Accionaria</h4>
+                            <p style="font-size:13px; color:var(--gray-dark); margin-bottom:12px;">Detalle la composición accionaria e indique si cada accionista es beneficiario final.</p>
+                            <div id="accionistasList"></div>
+                            <button type="button" class="dynamic-add-btn" onclick="addAccionista()">+ Agregar Accionista</button>
+                        </div>
+
+                        <!-- Beneficial Owners -->
+                        <div class="form-section">
+                            <h4>Beneficiario(s) Final(es)</h4>
+                            <p style="font-size:13px; color:var(--gray-dark); margin-bottom:12px;">Persona(s) natural(es) que poseen o controlan directa o indirectamente el 25% o más de la participación. Debe identificarse hasta llegar a la persona natural (Art. 28, Ley 23/2015). <strong>Complete los datos como si registrara una persona natural.</strong></p>
+                            <div id="beneficiariosList"></div>
+                            <button type="button" class="dynamic-add-btn" onclick="addBeneficiario()">+ Agregar Beneficiario Final</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Economic Activity -->
+                <div class="form-step" id="step3">
+                    <h3 class="step-title">Paso 3: Actividad Económica y Origen de Fondos</h3>
+
+                    <!-- PN Section -->
+                    <div id="pnEconSection" style="display: none;">
+                        <div class="form-group">
+                            <label>Ocupación / Profesión <span class="required">*</span></label>
+                            <input type="text" name="pn_ocupacion" placeholder="Ej: Abogado, Ingeniero, Contador">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Situación Laboral <span class="required">*</span></label>
+                            <select name="pn_situacion_laboral" onchange="toggleEmpleador()">
+                                <option value="">Seleccionar...</option>
+                                <option value="Asalariado">Asalariado</option>
+                                <option value="Independiente">Independiente / Cuenta Propia</option>
+                                <option value="Jubilado">Jubilado / Pensionado</option>
+                                <option value="Desempleado">Desempleado</option>
+                            </select>
+                        </div>
+
+                        <div id="empleadorSection" style="display: none;">
+                            <div class="form-group">
+                                <label>Nombre del Empleador <span class="required">*</span></label>
+                                <input type="text" name="pn_empleador" placeholder="Nombre de la empresa o institución">
+                            </div>
+                            <div class="form-group">
+                                <label>Cargo que Desempeña</label>
+                                <input type="text" name="pn_cargo_empleador" placeholder="Ej: Gerente, Analista, Director">
+                            </div>
+                        </div>
+
+                        <div id="independienteSection" style="display: none;">
+                            <div class="form-group">
+                                <label>Nombre del Negocio o Actividad</label>
+                                <input type="text" name="pn_nombre_negocio" placeholder="Nombre comercial si aplica">
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción de la Actividad Independiente</label>
+                                <textarea name="pn_actividad_independiente" placeholder="Describa brevemente su actividad"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ingreso Mensual Aproximado</label>
+                            <select name="pn_ingreso_mensual">
+                                <option value="">Seleccionar...</option>
+                                <option value="0-1000">$0 - $1,000</option>
+                                <option value="1000-5000">$1,000 - $5,000</option>
+                                <option value="5000-10000">$5,000 - $10,000</option>
+                                <option value="10000-50000">$10,000 - $50,000</option>
+                                <option value="50000+">$50,000+</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Origen de Fondos <span class="required">*</span></label>
+                            <select name="pn_origen_fondos">
+                                <option value="">Seleccionar...</option>
+                                <option value="Salarios">Salarios/Ingresos por empleo</option>
+                                <option value="Honorarios">Honorarios profesionales</option>
+                                <option value="Negocios">Ingresos de negocios propios</option>
+                                <option value="Inversion">Ingresos por inversiones</option>
+                                <option value="Alquiler">Alquiler de propiedades</option>
+                                <option value="Herencia">Herencia</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Descripción del Origen de Fondos</label>
+                            <textarea name="pn_descripcion_origen" placeholder="Explicar brevemente la fuente específica de fondos"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- PJ Section -->
+                    <div id="pjEconSection" style="display: none;">
+                        <div class="form-group">
+                            <label>Actividad Principal <span class="required">*</span></label>
+                            <input type="text" name="pj_actividad_principal" placeholder="Descripción de la actividad económica principal">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Sector Económico <span class="required">*</span></label>
+                            <select name="pj_sector_economico">
+                                <option value="">Seleccionar...</option>
+                                <option value="Comercio">Comercio</option>
+                                <option value="Manufactura">Manufactura</option>
+                                <option value="Servicios Financieros">Servicios Financieros</option>
+                                <option value="Tecnología">Tecnología</option>
+                                <option value="Real Estate">Real Estate</option>
+                                <option value="Importación/Exportación">Importación/Exportación</option>
+                                <option value="Logística">Logística</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Facturación Anual Aproximada</label>
+                            <select name="pj_facturacion_anual">
+                                <option value="">Seleccionar...</option>
+                                <option value="0-100k">$0 - $100,000</option>
+                                <option value="100k-500k">$100,000 - $500,000</option>
+                                <option value="500k-1m">$500,000 - $1,000,000</option>
+                                <option value="1m-5m">$1,000,000 - $5,000,000</option>
+                                <option value="5m+">$5,000,000+</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Número de Empleados</label>
+                            <input type="number" name="pj_numero_empleados" placeholder="Cantidad aproximada">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Origen de Fondos <span class="required">*</span></label>
+                            <select name="pj_origen_fondos">
+                                <option value="">Seleccionar...</option>
+                                <option value="Operaciones Comerciales">Ingresos por operaciones comerciales</option>
+                                <option value="Inversiones">Ingresos por inversiones</option>
+                                <option value="Préstamos">Financiamiento por préstamos</option>
+                                <option value="Capital Accionario">Aporte de capital de accionistas</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Países de Operación</label>
+                            <input type="text" name="pj_paises_operacion" placeholder="Ej: Panamá, USA, Colombia">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Commercial Relationship -->
+                <div class="form-step" id="step4">
+                    <h3 class="step-title">Paso 4: Relación Comercial</h3>
+
+                    <div class="form-group">
+                        <label>Tipo de Relación Comercial <span class="required">*</span></label>
+                        <select name="tipo_relacion">
+                            <option value="">Seleccionar...</option>
+                            <option value="Comprador">Comprador</option>
+                            <option value="Vendedor">Vendedor/Proveedor</option>
+                            <option value="Distribuidor">Distribuidor</option>
+                            <option value="Prestador Servicios">Prestador de Servicios</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Canal de Pago Principal <span class="required">*</span></label>
+                        <select name="canal_pago">
+                            <option value="">Seleccionar...</option>
+                            <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                            <option value="Criptomonedas">Criptomonedas</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Productos/Servicios a Contratar <span class="required">*</span></label>
+                        <textarea name="productos_servicios" placeholder="Describa detalladamente qué productos o servicios desea contratar con Balca Industrial"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Volumen Mensual Estimado <span class="required">*</span></label>
+                        <select name="volumen_mensual">
+                            <option value="">Seleccionar...</option>
+                            <option value="0-10k">$0 - $10,000</option>
+                            <option value="10k-50k">$10,000 - $50,000</option>
+                            <option value="50k-100k">$50,000 - $100,000</option>
+                            <option value="100k-500k">$100,000 - $500,000</option>
+                            <option value="500k+">$500,000+</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Países Involucrados en la Transacción</label>
+                        <div id="paisesContainer">
+                            <div class="pais-item" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+                                <select name="pais_0" style="flex:1;">
+                                    <option value="">Seleccionar país...</option>
+                                    <option value="Panamá">Panamá</option>
+                                    <option value="Estados Unidos">Estados Unidos</option>
+                                    <option value="Colombia">Colombia</option>
+                                    <option value="Costa Rica">Costa Rica</option>
+                                    <option value="México">México</option>
+                                    <option value="Brasil">Brasil</option>
+                                    <option value="Chile">Chile</option>
+                                    <option value="Argentina">Argentina</option>
+                                    <option value="Perú">Perú</option>
+                                    <option value="Ecuador">Ecuador</option>
+                                    <option value="España">España</option>
+                                    <option value="Alemania">Alemania</option>
+                                    <option value="China">China</option>
+                                    <option value="Japón">Japón</option>
+                                    <option value="Corea del Sur">Corea del Sur</option>
+                                    <option value="Singapur">Singapur</option>
+                                    <option value="India">India</option>
+                                    <option value="Emiratos Árabes">Emiratos Árabes</option>
+                                    <option value="Reino Unido">Reino Unido</option>
+                                    <option value="Francia">Francia</option>
+                                    <option value="Italia">Italia</option>
+                                    <option value="Canadá">Canadá</option>
+                                    <option value="Venezuela">Venezuela</option>
+                                    <option value="Nicaragua">Nicaragua</option>
+                                    <option value="Cuba">Cuba</option>
+                                    <option value="Rusia">Rusia</option>
+                                    <option value="Irán">Irán</option>
+                                    <option value="Corea del Norte">Corea del Norte</option>
+                                    <option value="Siria">Siria</option>
+                                    <option value="Myanmar">Myanmar</option>
+                                    <option value="Afganistán">Afganistán</option>
+                                    <option value="Otro">Otro (especificar)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="dynamic-add-btn" onclick="addPais()" style="margin-top:4px; font-size:13px;">+ Agregar otro país</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Moneda Principal de Transacción <span class="required">*</span></label>
+                        <select name="moneda_principal">
+                            <option value="">Seleccionar...</option>
+                            <option value="USD">Dólar Estadounidense (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="PAB">Balboa Panameño (PAB)</option>
+                            <option value="COP">Peso Colombiano (COP)</option>
+                            <option value="BRL">Real Brasileño (BRL)</option>
+                            <option value="Otra">Otra</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- STEP 5: PEP Declaration -->
+                <div class="form-step" id="step5">
+                    <h3 class="step-title">Paso 5: Declaración de Personas Expuestas Públicamente (PEP)</h3>
+
+                    <div id="pepPNSection">
+                        <div class="pep-alert">
+                            ⚠️ Los clientes PEP requieren Debida Diligencia Reforzada (EDD) conforme al Artículo 34 de la Ley 23 de 2015. Los funcionarios públicos y sus familiares cercanos pueden ser clasificados como PEP.
+                        </div>
+
+                        <div class="form-group">
+                            <label>¿Es usted una Persona Expuesta Públicamente (PEP)? <span class="required">*</span></label>
+                            <select name="pep_es_pep" onchange="togglePEPSection()">
+                                <option value="">Seleccionar...</option>
+                                <option value="No">No</option>
+                                <option value="Si">Sí</option>
+                            </select>
+                        </div>
+
+                        <div id="pepDetails" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Cargo Desempeñado <span class="required">*</span></label>
+                                    <input type="text" name="pep_cargo" placeholder="Ej: Ministro, Diputado, Magistrado">
+                                </div>
+                                <div class="form-group">
+                                    <label>Institución/Organismo <span class="required">*</span></label>
+                                    <input type="text" name="pep_institucion" placeholder="Ej: Ministerio de Salud, Asamblea Nacional">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>País <span class="required">*</span></label>
+                                    <input type="text" name="pep_pais" placeholder="País del cargo público">
+                                </div>
+                                <div class="form-group">
+                                    <label>Período del Cargo <span class="required">*</span></label>
+                                    <input type="text" name="pep_periodo" placeholder="Ej: 2015 - 2020">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>¿Tiene familiares cercanos que sean PEP? <span class="required">*</span></label>
+                            <select name="pep_familiar_pep" onchange="toggleFamiliarPEP()">
+                                <option value="">Seleccionar...</option>
+                                <option value="No">No</option>
+                                <option value="Si">Sí</option>
+                            </select>
+                        </div>
+
+                        <div id="familiarPepDetails" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nombre del Familiar PEP <span class="required">*</span></label>
+                                    <input type="text" name="pep_nombre_familiar" placeholder="Nombre completo">
+                                </div>
+                                <div class="form-group">
+                                    <label>Parentesco <span class="required">*</span></label>
+                                    <input type="text" name="pep_parentesco" placeholder="Ej: Padre, Cónyuge, Hermano">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>¿Está asociado comercialmente a una PEP? <span class="required">*</span></label>
+                            <select name="pep_asociado_pep" onchange="toggleAsociadoPEP()">
+                                <option value="">Seleccionar...</option>
+                                <option value="No">No</option>
+                                <option value="Si">Sí</option>
+                            </select>
+                        </div>
+
+                        <div id="asociadoPepDetails" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nombre de la PEP <span class="required">*</span></label>
+                                    <input type="text" name="pep_nombre_asociado" placeholder="Nombre completo de la PEP">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tipo de Asociación <span class="required">*</span></label>
+                                    <select name="pep_tipo_asociacion">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="Socio comercial">Socio comercial</option>
+                                        <option value="Socio accionario">Socio accionario</option>
+                                        <option value="Asesor/Consultor">Asesor / Consultor</option>
+                                        <option value="Proveedor">Proveedor</option>
+                                        <option value="Representante legal">Representante legal</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="pepPJSection" style="display:none;">
+                        <div style="background:#E8F5E9; border:1px solid var(--green); border-radius:8px; padding:20px; text-align:center;">
+                            <p style="color:#2E7D32; font-weight:600; font-size:15px;">✓ Para Personas Jurídicas, la declaración PEP se realiza individualmente para cada miembro de la Junta Directiva y cada Beneficiario Final en el Paso 2.</p>
+                            <p style="color:var(--gray-dark); font-size:13px; margin-top:8px;">Verifique que haya completado la información PEP de cada persona registrada.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 6: Required Documents -->
+                <div class="form-step" id="step6">
+                    <h3 class="step-title">Paso 6: Documentos Requeridos</h3>
+
+                    <p style="margin-bottom: 20px; color: var(--gray-dark); font-size: 14px;">
+                        Marque los documentos que tiene disponibles. Los documentos marcados como "Obligatorio" son necesarios para completar el onboarding.
+                    </p>
+
+                    <div id="documentsChecklist" class="documents-checklist"></div>
+
+                    <div style="background:#E3F2FD; border:1px solid #90CAF9; border-radius:8px; padding:16px; margin-top:20px;">
+                        <p style="font-size:14px; color:#1565C0; font-weight:600;">📋 Nota Importante:</p>
+                        <p style="font-size:13px; color:#333; margin-top:6px;">Los documentos marcados como obligatorios deben ser enviados al correo electrónico del agente asignado de Balca Industrial, S.A. que se le indicará una vez enviada su solicitud. Los documentos pueden ser enviados en formato digital (PDF, imagen legible) o en copia física certificada según se requiera.</p>
+                    </div>
+                </div>
+
+                <!-- STEP 7: Sworn Declaration -->
+                <div class="form-step" id="step7">
+                    <h3 class="step-title">Paso 7: Declaración Jurada y Firma</h3>
+
+                    <div class="declaration-box">
+                        <p><strong>DECLARACIÓN BAJO JURAMENTO</strong></p>
+                        <p>
+                            Yo, <strong id="declarationName">_______________</strong>, identificado(a) con <strong id="declarationDoc">_______________</strong>, DECLARO BAJO JURAMENTO que:
+                        </p>
+                        <p>
+                            a) La información contenida en este formulario y sus anexos es verdadera, completa y fidedigna.
+                        </p>
+                        <p>
+                            b) El origen de los fondos que utilizaré en mi relación comercial con Balca Industrial, S.A. provienen de actividades lícitas y NO derivan del tráfico de drogas, estafa calificada, tráfico ilegal de armas, robo, tráfico internacional de vehículos y/o personas, actividades terroristas, blanqueo de capitales, financiamiento del terrorismo, financiamiento de la proliferación de armas de destrucción masiva, ni de ninguna otra actividad ilegal prevista en la ley penal panameña.
+                        </p>
+                        <p>
+                            c) Los productos y/o servicios contratados con Balca Industrial, S.A. no serán utilizados para actividades vinculadas con blanqueo de capitales, financiamiento del terrorismo, financiamiento de la proliferación de armas de destrucción masiva, o cualquier otra actividad ilícita.
+                        </p>
+                        <p>
+                            d) Me comprometo a notificar a Balca Industrial, S.A. cualquier cambio material en la información proporcionada, conforme al Artículo 29 de la Ley 23 de 2015.
+                        </p>
+                        <p>
+                            e) Autorizo a Balca Industrial, S.A. a verificar la información proporcionada, consultar bases de datos públicas y privadas, y compartir información con las autoridades competentes cuando la ley lo requiera.
+                        </p>
+                        <p>
+                            f) Autorizo el tratamiento de mis datos personales conforme a la Ley 81 de 2019 (Protección de Datos Personales).
+                        </p>
+                    </div>
+
+                    <div class="legal-basis">
+                        <strong>Base Legal:</strong> Ley 23 de 27 de abril de 2015, Artículos 27-29 — Medidas de Debida Diligencia
+                    </div>
+
+                    <div class="checkboxes-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkbox1" name="declaration_accept">
+                            <label for="checkbox1">Confirmo que he leído y acepto la declaración jurada, y que la información es verdadera y completa.</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkbox2" name="declaration_verification">
+                            <label for="checkbox2">Autorizo las verificaciones y tratamiento de datos conforme a la Ley 23/2015 y Ley 81/2019.</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkbox3" name="declaration_consequences">
+                            <label for="checkbox3">Declaro conocer las consecuencias legales de proporcionar información falsa en materia BC/FT/FPADM.</label>
+                        </div>
+                    </div>
+
+                    <table class="signature-table">
+                        <tr>
+                            <td>Nombre(s) y Apellido(s)</td>
+                            <td id="signatureName">_______________</td>
+                            <td>Documento</td>
+                            <td id="signatureDoc">_______________</td>
+                        </tr>
+                        <tr>
+                            <td>Lugar</td>
+                            <td><input type="text" name="signature_place" style="width: 100%; border: none; padding: 5px; background: transparent;"></td>
+                            <td>Fecha</td>
+                            <td id="signatureDate">_______________</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Form Navigation -->
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;">Anterior</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Siguiente</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;" onclick="submitForm(event)">Enviar Solicitud</button>
+                </div>
+            </form>
+
+            <!-- Confirmation Message -->
+            <div id="confirmationMessage" style="display: none;">
+                <div class="confirmation-container">
+                    <div class="confirmation-icon">✓</div>
+                    <h2>¡Solicitud Recibida!</h2>
+                    <p>Su solicitud ha sido procesada exitosamente.</p>
+                    <div class="reference-number" id="refNumber">BALCA-2026-0000</div>
+                    <p>Su solicitud será validada por Balca Industrial, S.A. Uno de nuestros agentes se pondrá en contacto con usted una vez se realice la validación correspondiente.</p>
+                    <button class="btn btn-primary" style="margin-top: 20px;" onclick="goToRoute('#/')">Volver al Inicio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OEC PANEL PAGE -->
+    <div id="oecPage" style="display: none;">
+        <!-- Login Screen -->
+        <div id="oecLogin">
+            <div class="oec-login">
+                <h2>Panel del OEC</h2>
+                <div id="loginError" class="error-message" style="display: none;"></div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="Email del OEC">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="Contraseña">
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="loginOEC()">Iniciar Sesión</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="oecDashboard" class="oec-dashboard">
+            <div class="dashboard-header">
+                <div class="dashboard-title">BALCA INDUSTRIAL — Panel del OEC</div>
+                <div class="dashboard-user">
+                    <span id="userNameDisplay"></span>
+                    <button class="btn-logout" onclick="logoutOEC()">Cerrar Sesión</button>
+                </div>
+            </div>
+
+            <div class="dashboard-container">
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-card blue">
+                        <h3>Total de Solicitudes</h3>
+                        <div class="number" id="statTotal">0</div>
+                    </div>
+                    <div class="stat-card yellow">
+                        <h3>Pendientes de Evaluación</h3>
+                        <div class="number" id="statPending">0</div>
+                    </div>
+                    <div class="stat-card green">
+                        <h3>Aprobadas</h3>
+                        <div class="number" id="statApproved">0</div>
+                    </div>
+                    <div class="stat-card red">
+                        <h3>Rechazadas</h3>
+                        <div class="number" id="statRejected">0</div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section">
+                    <div class="filter-grid">
+                        <div class="filter-group">
+                            <label>Estado</label>
+                            <select id="filterEstado" onchange="loadSolicitudes()">
+                                <option value="">Todos</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_evaluacion">En Evaluación</option>
+                                <option value="aprobado">Aprobado</option>
+                                <option value="rechazado">Rechazado</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Tipo de Cliente</label>
+                            <select id="filterTipo" onchange="loadSolicitudes()">
+                                <option value="">Todos</option>
+                                <option value="PN">Persona Natural</option>
+                                <option value="PJ">Persona Jurídica</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Desde</label>
+                            <input type="date" id="filterDesde" onchange="loadSolicitudes()">
+                        </div>
+                        <div class="filter-group">
+                            <label>Hasta</label>
+                            <input type="date" id="filterHasta" onchange="loadSolicitudes()">
+                        </div>
+                        <div class="filter-group">
+                            <label>Búsqueda</label>
+                            <input type="text" id="filterBusqueda" placeholder="Nombre o referencia..." onkeyup="loadSolicitudes()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solicitudes Table -->
+                <table class="solicitudes-table">
+                    <thead>
+                        <tr>
+                            <th>Referencia</th>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Nombre/Razón Social</th>
+                            <th>PEP</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="solicitudesTableBody">
+                        <tr><td colspan="7" style="text-align: center; padding: 30px;">Cargando solicitudes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Evaluation View -->
+            <div id="evaluationView" class="evaluation-view">
+                <div class="eval-left-panel">
+                    <div id="clientSummary"></div>
+                </div>
+                <div class="eval-right-panel">
+                    <div id="evaluationForm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p id="loadingText">Procesando...</p>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════
+        // CONFIGURACIÓN SUPABASE - Modificar estos valores
+        // ═══════════════════════════════════════════════════
+        const SUPABASE_URL = 'https://adiduyljvuiqwcvtmqkw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkaWR1eWxqdnVpcXdjdnRtcWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNzQ0NjgsImV4cCI6MjA5MDY1MDQ2OH0.zhG-vxBDj9vO7QkUV7bifXv9iTrmCuDKgPSYi1EAy-k';
+        // ═══════════════════════════════════════════════════
+
+        // Check if in demo mode
+        const DEMO_MODE = SUPABASE_URL === 'https://TU-PROYECTO.supabase.co';
+        if (DEMO_MODE) {
+            document.getElementById('demoBanner').classList.add('show');
+        }
+
+        // Initialize Supabase
+        let db = null;
+        if (!DEMO_MODE) {
+            const { createClient } = window.supabase;
+            db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        // Demo mode storage
+        let demoStorage = {
+            solicitudes: [],
+            evaluaciones: {},
+            currentUser: null
+        };
+
+        // ===== ROUTING =====
+        function goToRoute(hash) {
+            window.location.hash = hash;
+            handleRoute();
+        }
+
+        function handleRoute() {
+            const hash = window.location.hash.slice(1) || '/';
+            const [path, query] = hash.split('?');
+
+            // Hide all pages
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('registrationPage').style.display = 'none';
+            document.getElementById('oecPage').style.display = 'none';
+
+            if (path === '/registro') {
+                showRegistrationPage();
+                const params = new URLSearchParams(query);
+                if (params.has('token')) {
+                    console.log('Token received:', params.get('token'));
+                }
+            } else if (path === '/panel') {
+                showOECPage();
+            } else {
+                showLandingPage();
+            }
+        }
+
+        function showLandingPage() {
+            document.getElementById('landingPage').style.display = 'flex';
+        }
+
+        function showRegistrationPage() {
+            document.getElementById('registrationPage').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function showOECPage() {
+            document.getElementById('oecPage').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // ===== REGISTRATION FORM LOGIC =====
+        let currentStep = 1;
+        let formData = {
+            tipo: null,
+            documentos: [],
+            pep: {}
+        };
+
+        function selectClientType(type) {
+            formData.tipo = type;
+            document.querySelectorAll('.client-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.client-type-card').classList.add('selected');
+
+            // Show/hide relevant sections
+            if (type === 'PN') {
+                document.getElementById('pnSection').style.display = 'block';
+                document.getElementById('pjSection').style.display = 'none';
+                document.getElementById('pnEconSection').style.display = 'block';
+                document.getElementById('pjEconSection').style.display = 'none';
+            } else {
+                document.getElementById('pnSection').style.display = 'none';
+                document.getElementById('pjSection').style.display = 'block';
+                document.getElementById('pnEconSection').style.display = 'none';
+                document.getElementById('pjEconSection').style.display = 'block';
+                renderJuntaDirectiva();
+                renderAccionistas();
+                renderBeneficiarios();
+            }
+        }
+
+        function changeStep(direction) {
+            if (!validateStep(currentStep)) {
+                alert('Por favor complete los campos requeridos en este paso.');
+                return;
+            }
+
+            currentStep += direction;
+            if (currentStep < 1) currentStep = 1;
+            if (currentStep > 7) currentStep = 7;
+
+            renderStep();
+        }
+
+        function renderStep() {
+            // Hide all steps
+            document.querySelectorAll('.form-step').forEach(step => {
+                step.classList.remove('active');
+            });
+
+            // Show current step
+            document.getElementById('step' + currentStep).classList.add('active');
+
+            // Update progress bar
+            for (let i = 1; i <= 7; i++) {
+                const progressStep = document.getElementById('progressStep' + i);
+                progressStep.classList.remove('active', 'completed');
+                if (i < currentStep) {
+                    progressStep.classList.add('completed');
+                } else if (i === currentStep) {
+                    progressStep.classList.add('active');
+                }
+            }
+
+            // Update buttons
+            document.getElementById('prevBtn').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('nextBtn').style.display = currentStep < 7 ? 'block' : 'none';
+            document.getElementById('submitBtn').style.display = currentStep === 7 ? 'block' : 'none';
+
+            // Update declaration fields
+            if (currentStep === 7) {
+                updateDeclarationFields();
+            }
+
+            // Render documents checklist
+            if (currentStep === 6) {
+                renderDocumentsChecklist();
+            }
+
+            // Handle PEP sections for PN vs PJ
+            if (currentStep === 5) {
+                const pepPN = document.getElementById('pepPNSection');
+                const pepPJ = document.getElementById('pepPJSection');
+                if (pepPN) pepPN.style.display = formData.tipo === 'PN' ? 'block' : 'none';
+                if (pepPJ) pepPJ.style.display = formData.tipo === 'PJ' ? 'block' : 'none';
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        function validateStep(step) {
+            let required = [];
+
+            if (step === 1) {
+                if (!formData.tipo) return false;
+            }
+
+            if (step === 2) {
+                if (formData.tipo === 'PN') {
+                    required = ['pn_nombre_completo', 'pn_tipo_documento', 'pn_numero_documento', 'pn_fecha_nacimiento', 'pn_nacionalidad', 'pn_pais_residencia', 'pn_direccion', 'pn_telefono', 'pn_email'];
+                } else {
+                    required = ['pj_razon_social', 'pj_pais_constitucion', 'pj_fecha_constitucion', 'pj_numero_registro', 'pj_domicilio_fiscal', 'pj_telefono', 'pj_email', 'pj_rep_nombre', 'pj_rep_documento', 'pj_rep_cargo', 'pj_rep_nacionalidad'];
+                }
+            }
+
+            if (step === 3) {
+                if (formData.tipo === 'PN') {
+                    required = ['pn_ocupacion', 'pn_situacion_laboral', 'pn_origen_fondos'];
+                } else {
+                    required = ['pj_actividad_principal', 'pj_sector_economico', 'pj_origen_fondos'];
+                }
+            }
+
+            if (step === 4) {
+                required = ['tipo_relacion', 'canal_pago', 'productos_servicios', 'volumen_mensual', 'moneda_principal'];
+            }
+
+            if (step === 5) {
+                required = ['pep_es_pep', 'pep_familiar_pep', 'pep_asociado_pep'];
+                if (document.querySelector('select[name="pep_es_pep"]').value === 'Si') {
+                    required.push('pep_cargo', 'pep_institucion', 'pep_pais', 'pep_periodo');
+                }
+            }
+
+            // Check required fields
+            for (let fieldName of required) {
+                const field = document.querySelector('[name="' + fieldName + '"]');
+                if (field && !field.value) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function addBeneficiario() {
+            const list = document.getElementById('beneficiariosList');
+            const i = list.children.length;
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.style.borderLeft = '3px solid var(--gold)';
+            item.innerHTML = `
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+                <h5 style="color:var(--gold);margin-bottom:12px;">Beneficiario Final ${i + 1}</h5>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre Completo <span class="required">*</span></label>
+                        <input type="text" name="bf_nombre_${i}" placeholder="Nombres y apellidos completos">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Documento <span class="required">*</span></label>
+                        <select name="bf_tipo_doc_${i}">
+                            <option value="">Seleccionar...</option>
+                            <option value="Cedula">Cédula de Identidad</option>
+                            <option value="Pasaporte">Pasaporte</option>
+                            <option value="Cedula Residente">Cédula de Residente</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Número de Documento <span class="required">*</span></label>
+                        <input type="text" name="bf_documento_${i}" placeholder="Número de identificación">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento <span class="required">*</span></label>
+                        <input type="date" name="bf_fecha_nac_${i}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nacionalidad <span class="required">*</span></label>
+                        <input type="text" name="bf_nacionalidad_${i}" placeholder="País de nacionalidad">
+                    </div>
+                    <div class="form-group">
+                        <label>País de Residencia <span class="required">*</span></label>
+                        <input type="text" name="bf_residencia_${i}" placeholder="País donde reside">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Dirección de Residencia <span class="required">*</span></label>
+                    <input type="text" name="bf_direccion_${i}" placeholder="Dirección completa">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Porcentaje de Participación <span class="required">*</span></label>
+                        <input type="number" name="bf_porcentaje_${i}" min="0" max="100" placeholder="Ej: 50">
+                    </div>
+                    <div class="form-group">
+                        <label>Ocupación / Profesión</label>
+                        <input type="text" name="bf_ocupacion_${i}" placeholder="Actividad que desempeña">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="bf_telefono_${i}" placeholder="+507 6000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" name="bf_email_${i}" placeholder="correo@ejemplo.com">
+                    </div>
+                </div>
+
+                <!-- PEP Section for this BF -->
+                <div style="background:#FFF8E1;border:1px solid var(--yellow);border-radius:8px;padding:16px;margin-top:12px;">
+                    <h5 style="color:#856404;margin-bottom:10px;">Declaración PEP — Beneficiario Final ${i + 1}</h5>
+                    <div class="form-group">
+                        <label>¿Es Persona Expuesta Políticamente (PEP)? <span class="required">*</span></label>
+                        <select name="bf_es_pep_${i}" onchange="toggleBfPep(${i})">
+                            <option value="No">No</option>
+                            <option value="Si">Sí</option>
+                        </select>
+                    </div>
+                    <div id="bfPepDetails_${i}" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Cargo Desempeñado <span class="required">*</span></label>
+                                <input type="text" name="bf_pep_cargo_${i}" placeholder="Ej: Ministro, Diputado">
+                            </div>
+                            <div class="form-group">
+                                <label>Institución <span class="required">*</span></label>
+                                <input type="text" name="bf_pep_institucion_${i}" placeholder="Organismo público">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>País del Cargo <span class="required">*</span></label>
+                                <input type="text" name="bf_pep_pais_${i}" placeholder="País">
+                            </div>
+                            <div class="form-group">
+                                <label>Período</label>
+                                <input type="text" name="bf_pep_periodo_${i}" placeholder="Ej: 2015 - 2020">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:8px;">
+                        <label>¿Es familiar directo de una PEP?</label>
+                        <select name="bf_familiar_pep_${i}" onchange="toggleBfFamiliarPep(${i})">
+                            <option value="No">No</option>
+                            <option value="Si">Sí</option>
+                        </select>
+                    </div>
+                    <div id="bfFamiliarPepDetails_${i}" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nombre del Familiar PEP</label>
+                                <input type="text" name="bf_familiar_nombre_${i}" placeholder="Nombre completo">
+                            </div>
+                            <div class="form-group">
+                                <label>Parentesco</label>
+                                <input type="text" name="bf_familiar_parentesco_${i}" placeholder="Ej: Padre, Cónyuge">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            list.appendChild(item);
+        }
+
+        function renderBeneficiarios() {
+            const beneficiariosList = document.getElementById('beneficiariosList');
+            beneficiariosList.innerHTML = '';
+            addBeneficiario();
+        }
+
+        function renderJuntaDirectiva() {
+            const list = document.getElementById('juntaDirectivaList');
+            if (list) { list.innerHTML = ''; addMiembroJunta(); }
+        }
+
+        function renderAccionistas() {
+            const list = document.getElementById('accionistasList');
+            if (list) { list.innerHTML = ''; addAccionista(); }
+        }
+
+        function toggleBfPep(index) {
+            const val = document.querySelector(`select[name="bf_es_pep_${index}"]`).value;
+            const el = document.getElementById(`bfPepDetails_${index}`);
+            if (el) el.style.display = val === 'Si' ? 'block' : 'none';
+        }
+
+        function toggleBfFamiliarPep(index) {
+            const val = document.querySelector(`select[name="bf_familiar_pep_${index}"]`).value;
+            const el = document.getElementById(`bfFamiliarPepDetails_${index}`);
+            if (el) el.style.display = val === 'Si' ? 'block' : 'none';
+        }
+
+        function addPais() {
+            const container = document.getElementById('paisesContainer');
+            const idx = container.children.length;
+            const div = document.createElement('div');
+            div.className = 'pais-item';
+            div.style.cssText = 'display:flex; gap:8px; margin-bottom:8px; align-items:center;';
+            div.innerHTML = `
+                <select name="pais_${idx}" style="flex:1;">
+                    <option value="">Seleccionar país...</option>
+                    <option value="Panamá">Panamá</option>
+                    <option value="Estados Unidos">Estados Unidos</option>
+                    <option value="Colombia">Colombia</option>
+                    <option value="Costa Rica">Costa Rica</option>
+                    <option value="México">México</option>
+                    <option value="Brasil">Brasil</option>
+                    <option value="Chile">Chile</option>
+                    <option value="Argentina">Argentina</option>
+                    <option value="Perú">Perú</option>
+                    <option value="Ecuador">Ecuador</option>
+                    <option value="España">España</option>
+                    <option value="Alemania">Alemania</option>
+                    <option value="China">China</option>
+                    <option value="Japón">Japón</option>
+                    <option value="Corea del Sur">Corea del Sur</option>
+                    <option value="Singapur">Singapur</option>
+                    <option value="India">India</option>
+                    <option value="Emiratos Árabes">Emiratos Árabes</option>
+                    <option value="Reino Unido">Reino Unido</option>
+                    <option value="Francia">Francia</option>
+                    <option value="Italia">Italia</option>
+                    <option value="Canadá">Canadá</option>
+                    <option value="Venezuela">Venezuela</option>
+                    <option value="Nicaragua">Nicaragua</option>
+                    <option value="Cuba">Cuba</option>
+                    <option value="Rusia">Rusia</option>
+                    <option value="Irán">Irán</option>
+                    <option value="Corea del Norte">Corea del Norte</option>
+                    <option value="Siria">Siria</option>
+                    <option value="Myanmar">Myanmar</option>
+                    <option value="Afganistán">Afganistán</option>
+                    <option value="Otro">Otro (especificar)</option>
+                </select>
+                <button type="button" onclick="this.parentElement.remove()" style="background:var(--red);color:white;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:16px;">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addMiembroJunta() {
+            const list = document.getElementById('juntaDirectivaList');
+            const i = list.children.length;
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre Completo <span class="required">*</span></label>
+                        <input type="text" name="jd_nombre_${i}" placeholder="Nombre del miembro">
+                    </div>
+                    <div class="form-group">
+                        <label>Cargo en la Junta <span class="required">*</span></label>
+                        <select name="jd_cargo_${i}">
+                            <option value="">Seleccionar...</option>
+                            <option value="Presidente">Presidente</option>
+                            <option value="Secretario">Secretario</option>
+                            <option value="Tesorero">Tesorero</option>
+                            <option value="Director">Director</option>
+                            <option value="Director Suplente">Director Suplente</option>
+                            <option value="Dignatario">Dignatario</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Documento de Identidad <span class="required">*</span></label>
+                        <input type="text" name="jd_documento_${i}" placeholder="Cédula o pasaporte">
+                    </div>
+                    <div class="form-group">
+                        <label>Nacionalidad <span class="required">*</span></label>
+                        <input type="text" name="jd_nacionalidad_${i}" placeholder="País de nacionalidad">
+                    </div>
+                </div>
+                <div style="background:#FFF8E1;border:1px solid var(--yellow);border-radius:8px;padding:12px;margin-top:8px;">
+                    <div class="form-group" style="margin-bottom:8px;">
+                        <label>¿Es Persona Expuesta Políticamente (PEP)?</label>
+                        <select name="jd_es_pep_${i}" onchange="toggleJdPep(${i})">
+                            <option value="No">No</option>
+                            <option value="Si">Sí</option>
+                        </select>
+                    </div>
+                    <div id="jdPepDetails_${i}" style="display:none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Cargo Público</label>
+                                <input type="text" name="jd_pep_cargo_${i}" placeholder="Cargo desempeñado">
+                            </div>
+                            <div class="form-group">
+                                <label>Institución</label>
+                                <input type="text" name="jd_pep_institucion_${i}" placeholder="Organismo público">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            list.appendChild(item);
+        }
+
+        function toggleJdPep(index) {
+            const val = document.querySelector(`select[name="jd_es_pep_${index}"]`).value;
+            const el = document.getElementById(`jdPepDetails_${index}`);
+            if (el) el.style.display = val === 'Si' ? 'block' : 'none';
+        }
+
+        function addAccionista() {
+            const list = document.getElementById('accionistasList');
+            const i = list.children.length;
+            const item = document.createElement('div');
+            item.className = 'dynamic-item';
+            item.innerHTML = `
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre del Accionista <span class="required">*</span></label>
+                        <input type="text" name="acc_nombre_${i}" placeholder="Persona natural o jurídica">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select name="acc_tipo_${i}">
+                            <option value="Natural">Persona Natural</option>
+                            <option value="Juridica">Persona Jurídica</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Documento de Identidad / Registro</label>
+                        <input type="text" name="acc_documento_${i}" placeholder="Cédula, pasaporte o registro mercantil">
+                    </div>
+                    <div class="form-group">
+                        <label>% de Participación <span class="required">*</span></label>
+                        <input type="number" name="acc_porcentaje_${i}" min="0" max="100" placeholder="Ej: 30">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>¿Es Beneficiario Final?</label>
+                    <select name="acc_es_bf_${i}">
+                        <option value="">Seleccionar...</option>
+                        <option value="Si">Sí — registrar como Beneficiario Final abajo</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+            `;
+            list.appendChild(item);
+        }
+
+        function toggleEmpleador() {
+            const val = document.querySelector('select[name="pn_situacion_laboral"]')?.value || '';
+            const empSection = document.getElementById('empleadorSection');
+            const indSection = document.getElementById('independienteSection');
+            if (empSection) empSection.style.display = val === 'Asalariado' ? 'block' : 'none';
+            if (indSection) indSection.style.display = val === 'Independiente' ? 'block' : 'none';
+        }
+
+        function togglePEPSection() {
+            const value = document.querySelector('select[name="pep_es_pep"]').value;
+            document.getElementById('pepDetails').style.display = value === 'Si' ? 'block' : 'none';
+        }
+
+        function toggleFamiliarPEP() {
+            const value = document.querySelector('select[name="pep_familiar_pep"]').value;
+            document.getElementById('familiarPepDetails').style.display = value === 'Si' ? 'block' : 'none';
+        }
+
+        function toggleAsociadoPEP() {
+            const value = document.querySelector('select[name="pep_asociado_pep"]').value;
+            document.getElementById('asociadoPepDetails').style.display = value === 'Si' ? 'block' : 'none';
+        }
+
+        function renderDocumentsChecklist() {
+            const checklistContainer = document.getElementById('documentsChecklist');
+            checklistContainer.innerHTML = '';
+
+            let docs = [];
+            if (formData.tipo === 'PN') {
+                docs = [
+                    { name: 'Cédula o Pasaporte vigente', tag: 'Obligatorio' },
+                    { name: 'Segundo documento de identidad', tag: 'Obligatorio' },
+                    { name: 'Comprobante de domicilio (máx. 3 meses)', tag: 'Obligatorio' },
+                    { name: 'Referencia bancaria', tag: 'Obligatorio' },
+                    { name: 'Referencia comercial', tag: 'Deseable' },
+                    { name: 'Record policivo', tag: 'Deseable' }
+                ];
+
+                docs.forEach((doc, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'document-item';
+                    item.innerHTML = `
+                        <input type="checkbox" name="doc_${index}" value="${doc.name}">
+                        <div class="document-info">
+                            <div class="document-name">${doc.name}</div>
+                            <span class="document-tag ${doc.tag.toLowerCase()}">${doc.tag}</span>
+                        </div>
+                    `;
+                    checklistContainer.appendChild(item);
+                });
+            } else {
+                // PJ: Documentos de la Empresa
+                const docsEmpresa = [
+                    { name: 'Certificado de existencia legal o Registro Público vigente (máx. 3 meses)', tag: 'Obligatorio' },
+                    { name: 'Pacto Social o Acta Constitutiva certificada', tag: 'Obligatorio' },
+                    { name: 'Poder de representación legal', tag: 'Obligatorio' },
+                    { name: 'Estructura accionaria certificada', tag: 'Obligatorio' },
+                    { name: 'Estados financieros último ejercicio fiscal', tag: 'Obligatorio' },
+                    { name: 'Certificado RUC/NIT', tag: 'Obligatorio' },
+                    { name: 'Resolución de junta directiva autorizando la relación comercial', tag: 'Obligatorio' },
+                    { name: 'Cédula del representante legal', tag: 'Obligatorio' },
+                    { name: 'Referencia bancaria de la empresa', tag: 'Obligatorio' },
+                    { name: 'Referencia comercial de la empresa', tag: 'Deseable' }
+                ];
+
+                // Count beneficiarios
+                const bfList = document.getElementById('beneficiariosList');
+                const numBFs = bfList ? bfList.children.length : 0;
+
+                // Header: Documentos de la Empresa
+                const headerEmpresa = document.createElement('h4');
+                headerEmpresa.style.cssText = 'color:var(--navy);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--gold);';
+                headerEmpresa.textContent = 'Documentos de la Empresa';
+                checklistContainer.appendChild(headerEmpresa);
+
+                docsEmpresa.forEach((doc, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'document-item';
+                    item.innerHTML = `
+                        <input type="checkbox" name="doc_emp_${index}" value="${doc.name}">
+                        <div class="document-info">
+                            <div class="document-name">${doc.name}</div>
+                            <span class="document-tag ${doc.tag.toLowerCase()}">${doc.tag}</span>
+                        </div>
+                    `;
+                    checklistContainer.appendChild(item);
+                });
+
+                // Documentos por cada Beneficiario Final
+                if (numBFs > 0) {
+                    const headerBF = document.createElement('h4');
+                    headerBF.style.cssText = 'color:var(--gold);margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--gold);';
+                    headerBF.textContent = 'Documentos por cada Beneficiario Final registrado';
+                    checklistContainer.appendChild(headerBF);
+
+                    for (let b = 0; b < numBFs; b++) {
+                        const bfName = document.querySelector(`[name="bf_nombre_${b}"]`)?.value || `Beneficiario ${b + 1}`;
+                        const bfSubHeader = document.createElement('p');
+                        bfSubHeader.style.cssText = 'font-weight:600;color:var(--dark);margin:12px 0 8px;padding-left:8px;border-left:3px solid var(--gold);';
+                        bfSubHeader.textContent = bfName;
+                        checklistContainer.appendChild(bfSubHeader);
+
+                        const docsBF = [
+                            { name: `Copia de cédula o pasaporte vigente — ${bfName}`, tag: 'Obligatorio' },
+                            { name: `Comprobante de domicilio (máx. 3 meses) — ${bfName}`, tag: 'Obligatorio' },
+                            { name: `Referencia bancaria personal — ${bfName}`, tag: 'Obligatorio' },
+                            { name: `Record policivo — ${bfName}`, tag: 'Deseable' }
+                        ];
+
+                        docsBF.forEach((doc, dIdx) => {
+                            const item = document.createElement('div');
+                            item.className = 'document-item';
+                            item.innerHTML = `
+                                <input type="checkbox" name="doc_bf${b}_${dIdx}" value="${doc.name}">
+                                <div class="document-info">
+                                    <div class="document-name">${doc.name}</div>
+                                    <span class="document-tag ${doc.tag.toLowerCase()}">${doc.tag}</span>
+                                </div>
+                            `;
+                            checklistContainer.appendChild(item);
+                        });
+                    }
+                }
+
+                docs = docsEmpresa;
+            }
+
+            formData.documentos = docs;
+        }
+
+        function updateDeclarationFields() {
+            let name = '';
+            let doc = '';
+
+            if (formData.tipo === 'PN') {
+                name = document.querySelector('[name="pn_nombre_completo"]')?.value || '';
+                doc = document.querySelector('[name="pn_numero_documento"]')?.value || '';
+            } else {
+                name = document.querySelector('[name="pj_razon_social"]')?.value || '';
+                doc = document.querySelector('[name="pj_numero_registro"]')?.value || '';
+            }
+
+            document.getElementById('declarationName').textContent = name;
+            document.getElementById('declarationDoc').textContent = doc;
+            document.getElementById('signatureName').textContent = name;
+            document.getElementById('signatureDoc').textContent = doc;
+            const today = new Date().toLocaleDateString('es-PA');
+            document.getElementById('signatureDate').textContent = today;
+            document.querySelector('[name="signature_place"]').value = '';
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+
+            if (!document.getElementById('checkbox1').checked ||
+                !document.getElementById('checkbox2').checked ||
+                !document.getElementById('checkbox3').checked) {
+                alert('Debe aceptar las tres declaraciones para continuar.');
+                return;
+            }
+
+            collectFormData();
+            submitSolicitud();
+        }
+
+        function collectFormData() {
+            const formElement = document.getElementById('registrationForm');
+            const formDataObj = new FormData(formElement);
+
+            // Store collected data
+            for (let [key, value] of formDataObj.entries()) {
+                formData[key] = value;
+            }
+
+            // Store document checklist
+            formData.documentos_disponibles = Array.from(document.querySelectorAll('input[name^="doc_"]:checked')).map(el => el.value);
+        }
+
+        async function submitSolicitud() {
+            showLoading('Enviando solicitud...');
+
+            try {
+                const ref = 'BALCA-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000);
+
+                if (DEMO_MODE) {
+                    // Demo mode: store in memory
+                    const solicitud = {
+                        id: Date.now(),
+                        referencia: ref,
+                        tipo_cliente: formData.tipo,
+                        datos_cliente: formData,
+                        estado: 'pendiente',
+                        es_pep: formData.pep_es_pep === 'Si',
+                        created_at: new Date().toISOString()
+                    };
+                    demoStorage.solicitudes.push(solicitud);
+                } else {
+                    // Supabase mode
+                    const { error } = await db.from('solicitudes').insert({
+                        referencia: ref,
+                        tipo_cliente: formData.tipo,
+                        datos_cliente: formData,
+                        estado: 'pendiente',
+                        es_pep: formData.pep_es_pep === 'Si',
+                        created_at: new Date().toISOString()
+                    });
+
+                    if (error) throw error;
+                }
+
+                hideLoading();
+
+                // Show confirmation
+                document.getElementById('registrationForm').style.display = 'none';
+                document.getElementById('confirmationMessage').style.display = 'block';
+                document.getElementById('refNumber').textContent = ref;
+
+                // Reset form
+                setTimeout(() => {
+                    currentStep = 1;
+                    formData = { tipo: null, documentos: [], pep: {} };
+                    document.getElementById('registrationForm').reset();
+                    document.getElementById('registrationForm').style.display = 'block';
+                    document.getElementById('confirmationMessage').style.display = 'none';
+                    renderStep();
+                }, 3000);
+            } catch (error) {
+                hideLoading();
+                alert('Error al enviar la solicitud: ' + error.message);
+            }
+        }
+
+        // ===== OEC PANEL LOGIC =====
+        async function loginOEC() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showError('loginError', 'Por favor complete todos los campos');
+                return;
+            }
+
+            showLoading('Autenticando...');
+
+            try {
+                if (DEMO_MODE) {
+                    // Demo mode: simple authentication
+                    if (email === 'oec@balca.com' && password === 'demo123') {
+                        demoStorage.currentUser = { email, name: 'Oficial de Enlace' };
+                        showOECDashboard();
+                    } else {
+                        throw new Error('Credenciales inválidas. Use: oec@balca.com / demo123');
+                    }
+                } else {
+                    const { data, error } = await db.auth.signInWithPassword({ email, password });
+                    if (error) throw error;
+                    showOECDashboard();
+                }
+
+                hideLoading();
+                document.getElementById('loginError').style.display = 'none';
+            } catch (error) {
+                hideLoading();
+                showError('loginError', error.message);
+            }
+        }
+
+        function showOECDashboard() {
+            document.getElementById('oecLogin').style.display = 'none';
+            document.getElementById('oecDashboard').classList.add('active');
+
+            if (DEMO_MODE && demoStorage.currentUser) {
+                document.getElementById('userNameDisplay').textContent = demoStorage.currentUser.name;
+            }
+
+            loadSolicitudes();
+        }
+
+        async function loadSolicitudes() {
+            try {
+                let solicitudes = [];
+
+                if (DEMO_MODE) {
+                    solicitudes = demoStorage.solicitudes;
+                } else {
+                    let query = db.from('solicitudes').select('*').order('created_at', { ascending: false });
+
+                    const estado = document.getElementById('filterEstado').value;
+                    const tipo = document.getElementById('filterTipo').value;
+                    const desde = document.getElementById('filterDesde').value;
+                    const hasta = document.getElementById('filterHasta').value;
+                    const busqueda = document.getElementById('filterBusqueda').value;
+
+                    if (estado) query = query.eq('estado', estado);
+                    if (tipo) query = query.eq('tipo_cliente', tipo);
+
+                    const { data, error } = await query;
+                    if (error) throw error;
+                    solicitudes = data || [];
+                }
+
+                // Apply client-side filters
+                solicitudes = solicitudes.filter(s => {
+                    const desde = document.getElementById('filterDesde').value;
+                    const hasta = document.getElementById('filterHasta').value;
+                    const busqueda = document.getElementById('filterBusqueda').value.toLowerCase();
+
+                    if (desde && new Date(s.created_at) < new Date(desde)) return false;
+                    if (hasta && new Date(s.created_at) > new Date(hasta)) return false;
+                    if (busqueda && !s.referencia.toLowerCase().includes(busqueda) &&
+                        !s.datos_cliente.pn_nombre_completo?.toLowerCase().includes(busqueda) &&
+                        !s.datos_cliente.pj_razon_social?.toLowerCase().includes(busqueda)) return false;
+
+                    return true;
+                });
+
+                renderSolicitudesTable(solicitudes);
+                updateStats(solicitudes);
+            } catch (error) {
+                console.error('Error loading solicitudes:', error);
+            }
+        }
+
+        function renderSolicitudesTable(solicitudes) {
+            const tbody = document.getElementById('solicitudesTableBody');
+            tbody.innerHTML = '';
+
+            if (solicitudes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px;">No hay solicitudes</td></tr>';
+                return;
+            }
+
+            solicitudes.forEach(s => {
+                const date = new Date(s.created_at).toLocaleDateString('es-PA');
+                const tipo = s.tipo_cliente === 'PN' ? 'Persona Natural' : 'Persona Jurídica';
+                const nombre = s.tipo_cliente === 'PN' ?
+                    (s.datos_cliente.pn_nombre_completo || 'N/A') :
+                    (s.datos_cliente.pj_razon_social || 'N/A');
+                const pep = s.es_pep ? 'Sí' : 'No';
+
+                const statusClass = 'status-' + (s.estado || 'pending').replace('_', '-');
+                const statusText = s.estado === 'pendiente' ? 'Pendiente' :
+                                   s.estado === 'en_evaluacion' ? 'En Evaluación' :
+                                   s.estado === 'aprobado' ? 'Aprobado' : 'Rechazado';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${s.referencia}</td>
+                    <td>${date}</td>
+                    <td>${tipo}</td>
+                    <td>${nombre}</td>
+                    <td>${pep}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td><button class="btn-evaluate" onclick="openEvaluation(${s.id})">Evaluar</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateStats(solicitudes) {
+            const total = solicitudes.length;
+            const pending = solicitudes.filter(s => !s.estado || s.estado === 'pendiente').length;
+            const approved = solicitudes.filter(s => s.estado === 'aprobado').length;
+            const rejected = solicitudes.filter(s => s.estado === 'rechazado').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statApproved').textContent = approved;
+            document.getElementById('statRejected').textContent = rejected;
+        }
+
+        function openEvaluation(solicitudId) {
+            let solicitud = null;
+
+            if (DEMO_MODE) {
+                solicitud = demoStorage.solicitudes.find(s => s.id === solicitudId);
+            } else {
+                // In real mode, would fetch from DB
+                console.log('Opening solicitud:', solicitudId);
+            }
+
+            if (!solicitud) return;
+
+            document.getElementById('evaluationView').classList.add('active');
+            renderClientSummary(solicitud);
+            renderEvaluationForm(solicitud);
+            window.scrollTo(0, 0);
+        }
+
+        function renderClientSummary(solicitud) {
+            const container = document.getElementById('clientSummary');
+            const datos = solicitud.datos_cliente;
+            let html = '<div class="eval-section-title">Referencia</div>';
+            html += `<div class="eval-data-item"><span class="eval-data-label">${solicitud.referencia}</span></div>`;
+
+            if (solicitud.tipo_cliente === 'PN') {
+                html += '<div class="eval-section-title">Datos Personales</div>';
+                html += `<div class="eval-data-item"><span class="eval-data-label">Nombre:</span> <span class="eval-data-value">${datos.pn_nombre_completo || ''}</span></div>`;
+                html += `<div class="eval-data-item"><span class="eval-data-label">Documento:</span> <span class="eval-data-value">${datos.pn_numero_documento || ''}</span></div>`;
+                html += `<div class="eval-data-item"><span class="eval-data-label">Email:</span> <span class="eval-data-value">${datos.pn_email || ''}</span></div>`;
+                html += `<div class="eval-data-item"><span class="eval-data-label">Teléfono:</span> <span class="eval-data-value">${datos.pn_telefono || ''}</span></div>`;
+            } else {
+                html += '<div class="eval-section-title">Datos de la Empresa</div>';
+                html += `<div class="eval-data-item"><span class="eval-data-label">Razón Social:</span> <span class="eval-data-value">${datos.pj_razon_social || ''}</span></div>`;
+                html += `<div class="eval-data-item"><span class="eval-data-label">Representante:</span> <span class="eval-data-value">${datos.pj_rep_nombre || ''}</span></div>`;
+                html += `<div class="eval-data-item"><span class="eval-data-label">Email:</span> <span class="eval-data-value">${datos.pj_email || ''}</span></div>`;
+            }
+
+            html += '<div class="eval-section-title">Actividad</div>';
+            if (solicitud.tipo_cliente === 'PN') {
+                html += `<div class="eval-data-item"><span class="eval-data-label">Ocupación:</span> <span class="eval-data-value">${datos.pn_ocupacion || ''}</span></div>`;
+            } else {
+                html += `<div class="eval-data-item"><span class="eval-data-label">Actividad:</span> <span class="eval-data-value">${datos.pj_actividad_principal || ''}</span></div>`;
+            }
+
+            html += '<div class="eval-section-title">Estado PEP</div>';
+            html += `<div class="eval-data-item"><span class="eval-data-value">${solicitud.es_pep ? 'Sí es PEP' : 'No es PEP'}</span></div>`;
+
+            container.innerHTML = html;
+        }
+
+        function renderEvaluationForm(solicitud) {
+            const container = document.getElementById('evaluationForm');
+            let html = '<h4>Evaluación de Cumplimiento</h4>';
+
+            // 2.1 Verificación Documental
+            html += '<div class="eval-subsection">';
+            html += '<h5>2.1 Verificación Documental</h5>';
+            html += '<table class="eval-table">';
+            html += '<thead><tr><th>Documento</th><th>Recibido</th><th>Conforme</th><th>Observaciones</th></tr></thead>';
+            html += '<tbody>';
+
+            const docs = solicitud.tipo_cliente === 'PN' ?
+                ['Cédula/Pasaporte', 'Segundo documento', 'Comprobante domicilio', 'Referencia bancaria'] :
+                ['Cédula representante', 'Certificado existencia legal', 'Pacto social', 'Estructura accionaria'];
+
+            docs.forEach((doc, idx) => {
+                html += `<tr>
+                    <td>${doc}</td>
+                    <td><input type="checkbox" name="doc_received_${idx}"></td>
+                    <td><select name="doc_conforme_${idx}"><option>Pendiente</option><option>Sí</option><option>No</option></select></td>
+                    <td><input type="text" name="doc_obs_${idx}" style="width: 100%;"></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+
+            // 2.2 Consulta de Listas Restrictivas
+            html += '<div class="eval-subsection">';
+            html += '<h5>2.2 Consulta de Listas Restrictivas</h5>';
+            html += '<table class="eval-table">';
+            html += '<thead><tr><th>Lista</th><th>Fecha Consulta</th><th>Resultado</th><th>Observaciones</th></tr></thead>';
+            html += '<tbody>';
+
+            const listas = ['OFAC - SDN List', 'ONU - Lista Consolidada', 'UE - Sanciones', 'UAF Panamá', 'PEP - Verificación'];
+            listas.forEach((lista, idx) => {
+                html += `<tr>
+                    <td>${lista}</td>
+                    <td><input type="date" name="lista_fecha_${idx}"></td>
+                    <td><select name="lista_resultado_${idx}"><option>Pendiente</option><option>Negativo</option><option>Positivo</option></select></td>
+                    <td><input type="text" name="lista_obs_${idx}" style="width: 100%;"></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table></div>';
+
+            // 2.3 Evaluación Basada en Riesgo
+            html += '<div class="eval-subsection">';
+            html += '<h5>2.3 Evaluación Basada en Riesgo (EBR)</h5>';
+            html += '<div style="margin-bottom: 15px;">';
+            html += '<label>Riesgo del Cliente (35%)</label>';
+            html += '<select name="ebr_cliente" onchange="calculateEBR()">';
+            html += '<option value="1">Bajo (1)</option><option value="2">Medio (2)</option><option value="3">Alto (3)</option>';
+            html += '</select></div>';
+
+            html += '<div style="margin-bottom: 15px;">';
+            html += '<label>Riesgo Geográfico (30%)</label>';
+            html += '<select name="ebr_geografico" onchange="calculateEBR()">';
+            html += '<option value="1">Bajo (1)</option><option value="2">Medio (2)</option><option value="3">Alto (3)</option>';
+            html += '</select></div>';
+
+            html += '<div style="margin-bottom: 15px;">';
+            html += '<label>Riesgo Producto/Servicio (20%)</label>';
+            html += '<select name="ebr_producto" onchange="calculateEBR()">';
+            html += '<option value="1">Bajo (1)</option><option value="2">Medio (2)</option><option value="3">Alto (3)</option>';
+            html += '</select></div>';
+
+            html += '<div style="margin-bottom: 15px;">';
+            html += '<label>Riesgo Canal Distribución (15%)</label>';
+            html += '<select name="ebr_canal" onchange="calculateEBR()">';
+            html += '<option value="1">Bajo (1)</option><option value="2">Medio (2)</option><option value="3">Alto (3)</option>';
+            html += '</select></div>';
+
+            html += '<div id="ebrResult" class="ebr-result" style="display: none;">';
+            html += '<div class="ebr-result-row"><span class="ebr-result-label">Puntuación EBR:</span> <span class="ebr-result-value" id="ebrScore">0.0</span></div>';
+            html += '<div class="ebr-result-row"><span class="ebr-result-label">Clasificación:</span> <span class="ebr-result-value" id="ebrClass">-</span></div>';
+            html += '<div class="ebr-result-row"><span class="ebr-result-label">Nivel DD:</span> <span class="ebr-result-value" id="ebrDD">-</span></div>';
+            html += '</div></div>';
+
+            // 2.4 Decisión
+            html += '<div class="eval-subsection">';
+            html += '<h5>2.4 Decisión</h5>';
+            html += '<div class="eval-radio-group">';
+            html += '<label><input type="radio" name="decision" value="aprobado"> APROBADO</label>';
+            html += '<label><input type="radio" name="decision" value="aprobado_condiciones"> APROBADO CON CONDICIONES</label>';
+            html += '<label><input type="radio" name="decision" value="rechazado"> RECHAZADO</label>';
+            html += '<label><input type="radio" name="decision" value="pendiente"> PENDIENTE DE INFORMACIÓN</label>';
+            html += '</div>';
+
+            html += '<div style="margin-top: 15px;">';
+            html += '<label>Justificación</label>';
+            html += '<textarea name="decision_justificacion" style="width: 100%; min-height: 80px;"></textarea>';
+            html += '</div></div>';
+
+            // 2.5 Observaciones Generales
+            html += '<div class="eval-subsection">';
+            html += '<h5>2.5 Observaciones Generales</h5>';
+            html += '<textarea name="observaciones_generales" style="width: 100%; min-height: 100px;"></textarea>';
+            html += '</div>';
+
+            // 2.6 Firma
+            html += '<div class="eval-subsection">';
+            html += '<h5>2.6 Firma del OEC</h5>';
+            html += '<table class="signature-table">';
+            html += '<tr><td>Nombre del OEC</td><td id="oecNameField">_______________</td>';
+            html += '<td>Cargo</td><td>Oficial de Enlace de Cumplimiento</td></tr>';
+            html += '<tr><td>Fecha de Evaluación</td><td colspan="3"><input type="date" name="eval_fecha" value="' + new Date().toISOString().split('T')[0] + '"></td></tr>';
+            html += '</table></div>';
+
+            html += '<div class="evaluation-actions">';
+            html += '<button type="button" class="btn btn-primary" onclick="saveEvaluation(' + solicitud.id + ')">Guardar Evaluación</button>';
+            html += '<button type="button" class="btn btn-secondary" onclick="closeEvaluation()">Volver al Panel</button>';
+            html += '<button type="button" class="btn btn-secondary" onclick="window.print()">Imprimir</button>';
+            html += '</div>';
+
+            container.innerHTML = html;
+
+            if (DEMO_MODE && demoStorage.currentUser) {
+                document.getElementById('oecNameField').textContent = demoStorage.currentUser.name;
+            }
+        }
+
+        function calculateEBR() {
+            const cliente = parseFloat(document.querySelector('[name="ebr_cliente"]').value) || 1;
+            const geografico = parseFloat(document.querySelector('[name="ebr_geografico"]').value) || 1;
+            const producto = parseFloat(document.querySelector('[name="ebr_producto"]').value) || 1;
+            const canal = parseFloat(document.querySelector('[name="ebr_canal"]').value) || 1;
+
+            const score = (cliente * 0.35) + (geografico * 0.30) + (producto * 0.20) + (canal * 0.15);
+            const clasificacion = score <= 1.7 ? 'Bajo' : score <= 2.4 ? 'Medio' : 'Alto';
+            const nivelDD = score <= 1.7 ? 'DDS' : score <= 2.4 ? 'DDE' : 'EDD';
+
+            document.getElementById('ebrResult').style.display = 'block';
+            document.getElementById('ebrScore').textContent = score.toFixed(2);
+            document.getElementById('ebrClass').textContent = clasificacion;
+            document.getElementById('ebrDD').textContent = nivelDD;
+        }
+
+        function saveEvaluation(solicitudId) {
+            showLoading('Guardando evaluación...');
+
+            try {
+                // Collect evaluation data
+                const evalData = {
+                    solicitud_id: solicitudId,
+                    estado: document.querySelector('[name="decision"]').value || 'pendiente'
+                };
+
+                if (DEMO_MODE) {
+                    demoStorage.evaluaciones[solicitudId] = evalData;
+                    // Update solicitud status
+                    const solicitud = demoStorage.solicitudes.find(s => s.id === solicitudId);
+                    if (solicitud) {
+                        solicitud.estado = evalData.estado;
+                    }
+                }
+
+                hideLoading();
+                alert('Evaluación guardada correctamente');
+                closeEvaluation();
+                loadSolicitudes();
+            } catch (error) {
+                hideLoading();
+                alert('Error al guardar evaluación: ' + error.message);
+            }
+        }
+
+        function closeEvaluation() {
+            document.getElementById('evaluationView').classList.remove('active');
+        }
+
+        function logoutOEC() {
+            if (DEMO_MODE) {
+                demoStorage.currentUser = null;
+            }
+            document.getElementById('oecDashboard').classList.remove('active');
+            document.getElementById('oecLogin').style.display = 'block';
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        // ===== UTILITY FUNCTIONS =====
+        function showLoading(message) {
+            document.getElementById('loadingOverlay').classList.add('show');
+            document.getElementById('loadingText').textContent = message;
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+
+        function showError(elementId, message) {
+            const errorEl = document.getElementById(elementId);
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        // ===== ROUTE HANDLER =====
+        window.addEventListener('hashchange', handleRoute);
+        document.addEventListener('DOMContentLoaded', () => {
+            renderStep();
+            handleRoute();
+        });
+    </script>
+</body>
+</html>
